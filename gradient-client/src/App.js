@@ -1,8 +1,7 @@
 import React,{useState, useEffect, useRef} from 'react';
 import './App.css';
 
-import Sidebar from './components/Sidebar';
-
+// Css Utils
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
     faArrowDown,
@@ -11,8 +10,10 @@ import {
     faArrowUp,
     faCircle
   } from '@fortawesome/free-solid-svg-icons'
-import { RgbaColorPicker, HexColorPicker } from "react-colorful";
+import { RgbaColorPicker } from "react-colorful";
 
+//Services
+import {getAllTemplates, addTemplate} from './services'
 
 
 function App() {
@@ -52,19 +53,19 @@ function App() {
   const [gradientType, setGradientType] = useState(allConfig.style.linear);
   const [direction, setDirection] = useState(allConfig.directionLinear.leftTop);
   const [directionType, setDirectionType] = useState('directionLinear');
+
   const [color1, setColor1] = useState({r:221,g:235,b:150,a:117});
   useEffect( ()=>{
     actualConfig.rgba.color1 = color1;
     getHex();
-  } );
+  });
+
   const [color2, setColor2] = useState({r:10,g:14,b:157,a:1});
   useEffect( ()=>{
     actualConfig.rgba.color2 = color2;
     getHex();
   } );
-  const [gradientStyle, setGradientStyle] = useState({
-    backgroundImage: `${gradientType}(${direction.length > 0 ? direction+',': ''} rgb(${color1.r},${color1.g},${color1.b}), rgb(${color2.r},${color2.g},${color2.b}))`
-  });
+
   
   const actualConfig = {
     gradientType:gradientType,
@@ -116,13 +117,10 @@ function App() {
 
   const [templates, setTemplates] = useState([]);
   useEffect(()=>{
-    fetch('http://localhost:8080/template')
-      .then(response => response.json())
-      .then((data) => {
-        allTemplatesData.current = data.result;
-        setTemplates(allTemplatesData.current);
-        //setAllTemplates(data.result)
-        setTemplate(allTemplatesData.current[0]);
+    getAllTemplates().then( (data)=>{
+      allTemplatesData.current = data.result;
+      setTemplates(allTemplatesData.current);
+      setTemplate(allTemplatesData.current[0]);
     })
   },[]);
 
@@ -153,32 +151,22 @@ function App() {
         actualConfig.btnMap.style.linear.selected = false;
         actualConfig.btnMap.style.radial.selected = true;
       }
-      setGradientStyle({
-        backgroundImage: `${actualConfig.gradientType}(${actualConfig.direction.length > 0 ? actualConfig.direction+',': ''} ${actualConfig.color1},${actualConfig.color2})`
-      })
+      
       actualConfig.style = {
         backgroundImage: `${actualConfig.gradientType}(${actualConfig.direction.length > 0 ? actualConfig.direction+',': ''} ${actualConfig.color1},${actualConfig.color2})`
       }
     }
-    
-    console.log(actualConfig)
 
   } 
 
   const changeDirection = (e, dir)=>{
-    console.log(e);
-    console.log(dir);
-
     actualConfig.direction = dir;
     setDirection(dir);
-
-    setGradientStyle({
-      backgroundImage: `${actualConfig.gradientType}(${actualConfig.direction.length > 0 ? actualConfig.direction+',': ''} ${actualConfig.color1},${actualConfig.color2})`
-    })
+ 
     actualConfig.style = {
       backgroundImage: `${actualConfig.gradientType}(${actualConfig.direction.length > 0 ? actualConfig.direction+',': ''} ${actualConfig.color1},${actualConfig.color2})`
     }
-    console.log(actualConfig)
+    
   }
 
   const openPicker = (ref)=>{
@@ -188,24 +176,33 @@ function App() {
       actualConfig.btnMap.colors.color1.selected = true;
       actualConfig.btnMap.colors.color2.active = false;
       actualConfig.btnMap.colors.color2.selected = false;
-      /*
-      setBtnMap({
+      setBtnMap({colors: {
         color1: {
-          active: false,
-          selected: false
+          active: true,
+          selected: true
         },
         color2: {
           active: false,
           selected: false
         },
-      })
-      */
+      }});
     }
     if(ref === 'cp2'){
       actualConfig.btnMap.colors.color1.active = false;
       actualConfig.btnMap.colors.color1.selected = false;
       actualConfig.btnMap.colors.color2.active = true;
       actualConfig.btnMap.colors.color2.selected = true;
+      setBtnMap({colors: {
+        color1: {
+          active: false,
+          selected: false
+        },
+        color2: {
+          active: true,
+          selected: true
+        },
+      }});
+
     }
   }
 
@@ -216,9 +213,9 @@ function App() {
     actualConfig.btnMap.colors.color2.active = false;
     actualConfig.btnMap.colors.color2.selected = false;
 
-    /*
+    
     if(ref === 'cp1'){
-      setBtnMap({
+      setBtnMap({colors: {
         color1: {
           active: false,
           selected: false
@@ -227,10 +224,10 @@ function App() {
           active: false,
           selected: false
         },
-      })
+      }});
     }
     if(ref === 'cp2'){
-      setBtnMap({
+      setBtnMap({colors: {
         color1: {
           active: false,
           selected: false
@@ -239,9 +236,9 @@ function App() {
           active: false,
           selected: false
         },
-      })
+      }});
     }
-    */
+    
   }
 
   const randomColors = ()=>{
@@ -365,27 +362,14 @@ function App() {
         created_by: createdBy,
         style: actualConfig
       }  
-      fetch('http://localhost:8080/template', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(arr)
-      })
-      .then( (response) => { 
-        return response.json();
-      })
-      .then((data) => {
-          setName("");
-          setCreatedBy("");
-          console.log(data);
-          allTemplatesData.current.push(data.result[0]);
-          setTemplates(allTemplatesData.current);
-          setTemplate(data.result[0]);
-          console.log(allTemplatesData);
-        });
 
+      addTemplate(arr).then((data) => {
+        allTemplatesData.current.push(data.result[0]);
+        setTemplates(allTemplatesData.current);
+        setTemplate(data.result[0]);
+        setName("");
+        setCreatedBy("");
+      });
     }else{
       alert("Fill form correctly.")
     }
@@ -528,9 +512,3 @@ function App() {
 
 export default App;
 
-/*
-background: #0153FF;
-background: -webkit-linear-gradient(right, #0153FF, #FF0101);
-background: -moz-linear-gradient(right, #0153FF, #FF0101);
-background: linear-gradient(to left, #0153FF, #FF0101);
-*/
