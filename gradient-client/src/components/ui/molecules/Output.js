@@ -6,29 +6,29 @@ export function Output(props){
 	const [btnRgba, setBtnRgba] = useState(true);
 
     const setHex = ()=>{
-        const hexColor1 = [props.color1.r, props.color1.g, props.color1.b].map((val) =>{
-            val = parseInt(val).toString(16);     
-            return (val.length === 1) ? "0"+val : val;
-        });
-        const hexColor2 = [props.color2.r, props.color2.g, props.color2.b].map((val) =>{
-            val = parseInt(val).toString(16);     
-            return (val.length === 1) ? "0"+val : val;
-        });
         props.onUpdateOutputFormat({
             hex: {
                 active: true,
-                color1: `#${hexColor1.join("")}`,
-                color2: `#${hexColor2.join("")}`
+                color1: RgbToHex(props.color1.r, props.color1.g, props.color1.b),
+                color2: RgbToHex(props.color2.r, props.color2.g, props.color2.b)
             },
-            rgba: {active: false}
+            rgba: {
+                active: false,
+                color1: props.color1,
+                color2: props.color2
+            }
         })
         setBtnHex(true);
         setBtnRgba(false);
     }
-
+    
     const setRgba = ()=>{
         props.onUpdateOutputFormat({
-            hex: {active: false},
+            hex: {
+                active: false,
+                color1: RgbToHex(props.color1.r, props.color1.g, props.color1.b),
+                color2: RgbToHex(props.color2.r, props.color2.g, props.color2.b)
+            },
             rgba: {
                 active: true,
                 color1: props.color1,
@@ -39,6 +39,14 @@ export function Output(props){
         setBtnRgba(true);
     }
 
+    const RgbToHex = (r,g,b)=>{
+        const hex = [r,g,b].map( (val)=> {
+            val = parseInt(val).toString(16);     
+            return (val.length === 1) ? "0"+val : val;
+        })
+        return `#${hex.join("")}`
+    }
+    
     return (
         <>
             <div className="sidebar__content">

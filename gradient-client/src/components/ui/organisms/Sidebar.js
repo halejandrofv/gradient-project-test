@@ -18,8 +18,9 @@ export function Sidebar(){
     const [gradientType, setGradientType] = useState(allConfig.style.linear);
     const [direction, setDirection] = useState(allConfig.directionLinear.leftTop);
     const [directionType, setDirectionType] = useState('directionLinear');
+    const [hexConfig, setHexConfig] = useState({hex:})
     const [color1, setColor1] = useState({r:221,g:235,b:150,a:117});
-
+    
 
     useEffect( ()=>{
         actualConfig.rgba.color1 = color1;
