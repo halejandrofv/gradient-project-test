@@ -1,7 +1,7 @@
 import {
     API_URL,
     TEMPLATE
-} from './CONST'
+} from '../config/api'
 
 export const getAllTemplates = () => {
     return new Promise( (resolve,reject)=>{
