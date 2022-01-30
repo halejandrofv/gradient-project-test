@@ -14,15 +14,6 @@ export function Colors(props){
 		});
 	});
 
-	/*
-	useEffect( ()=>{
-		props.onUpdateColors({
-			color1: colorOne,
-			color2: colorTwo
-		})
-	},[colorOne, colorTwo, props] );
-	*/
-
 	const uploadColors = (value,ref)=>{
 		switch(ref){
 			case 'c1':
