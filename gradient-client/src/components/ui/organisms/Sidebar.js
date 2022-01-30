@@ -7,7 +7,8 @@ import {
     HeaderLogo, 
     Style,
     Direction,
-    Colors
+    Colors,
+    Output
 } from '../molecules';
 import { allConfig } from '../../../config/gradient';
 
@@ -17,8 +18,9 @@ export function Sidebar(){
     const [gradientType, setGradientType] = useState(allConfig.style.linear);
     const [direction, setDirection] = useState(allConfig.directionLinear.leftTop);
     const [directionType, setDirectionType] = useState('directionLinear');
-
+    const [hexConfig, setHexConfig] = useState({hex:})
     const [color1, setColor1] = useState({r:221,g:235,b:150,a:117});
+    
 
     useEffect( ()=>{
         actualConfig.rgba.color1 = color1;
@@ -27,8 +29,8 @@ export function Sidebar(){
 
     const [color2, setColor2] = useState({r:10,g:14,b:157,a:1});
     useEffect( ()=>{
-    actualConfig.rgba.color2 = color2;
-    getHex();
+        actualConfig.rgba.color2 = color2;
+        getHex();
     } );
 
     
@@ -82,11 +84,11 @@ export function Sidebar(){
 
     const [templates, setTemplates] = useState([]);
     useEffect(()=>{
-    getAllTemplates().then( (data)=>{
-        allTemplatesData.current = data.result;
-        setTemplates(allTemplatesData.current);
-        setTemplate(allTemplatesData.current[0]);
-    })
+        getAllTemplates().then( (data)=>{
+            allTemplatesData.current = data.result;
+            setTemplates(allTemplatesData.current);
+            setTemplate(allTemplatesData.current[0]);
+        })
     },[]);
 
     const [template, setTemplate] = useState({});
@@ -164,34 +166,34 @@ export function Sidebar(){
     }
 
     const changeInput = (e, type)=>{
-    if(type === 'name'){
-        setName(e.target.value);
-    }
-    if(type === 'createdBy'){
-        setCreatedBy(e.target.value)
-    }
+        if(type === 'name'){
+            setName(e.target.value);
+        }
+        if(type === 'createdBy'){
+            setCreatedBy(e.target.value)
+        }
     }
 
     const onSubmitTemplate = (e) => {
-    e.preventDefault();
-    if(name !== "" && createdBy !== ""){
-        
-        const arr = {
-        name: name,
-        created_by: createdBy,
-        style: actualConfig
-        }  
+        e.preventDefault();
+        if(name !== "" && createdBy !== ""){
+            
+            const arr = {
+            name: name,
+            created_by: createdBy,
+            style: actualConfig
+            }  
 
-        addTemplate(arr).then((data) => {
-        allTemplatesData.current.push(data.result[0]);
-        setTemplates(allTemplatesData.current);
-        setTemplate(data.result[0]);
-        setName("");
-        setCreatedBy("");
-        });
-    }else{
-        alert("Fill form correctly.")
-    }
+            addTemplate(arr).then((data) => {
+            allTemplatesData.current.push(data.result[0]);
+            setTemplates(allTemplatesData.current);
+            setTemplate(data.result[0]);
+            setName("");
+            setCreatedBy("");
+            });
+        }else{
+            alert("Fill form correctly.")
+        }
     }
     const updateGradientType = (type) => {
         actualConfig.gradientType = type;
@@ -252,6 +254,10 @@ export function Sidebar(){
         //getRgba();
     }
 
+    const updateOutputFormat = (value)=>{
+        console.log(value);
+    }
+
     return (
     <>
         <div className="sidebar">
@@ -264,11 +270,7 @@ export function Sidebar(){
 
             <Colors onUpdateColors={updateColors} color1={color1} color2={color2} />
 
-            <div className="sidebar__content">
-                <p className='subtitle'> Output format </p>
-                <button className='btn' onClick={ ()=> getHex() }> Hex </button>
-                <button className='btn m-l0' onClick={ ()=> getRgba() }> Rgba </button> 
-            </div>
+            <Output onUpdateOutputFormat={updateOutputFormat} color1={color1} color2={color2} />
 
             <div className="sidebar__content">
                 
