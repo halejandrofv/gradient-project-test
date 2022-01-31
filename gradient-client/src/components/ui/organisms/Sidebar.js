@@ -8,32 +8,36 @@ import {
     Style,
     Direction,
     Colors,
-    Output
+    Output,
+    GetterOutputs,
+    TemplatesSelector,
+    CreateTemplates
 } from '../molecules';
 import { allConfig } from '../../../config/gradient';
+import { RgbToHex } from '../../../utils/rgbToHex';
 
 export function Sidebar(){
     
-    const allTemplatesData = useRef([]);
     const [gradientType, setGradientType] = useState(allConfig.style.linear);
     const [direction, setDirection] = useState(allConfig.directionLinear.leftTop);
     const [directionType, setDirectionType] = useState('directionLinear');
-    const [hexConfig, setHexConfig] = useState({hex:})
+
+    const [name, setName] = useState("");
+    const [createdBy, setCreatedBy] = useState("");
+
     const [color1, setColor1] = useState({r:221,g:235,b:150,a:117});
-    
-
-    useEffect( ()=>{
-        actualConfig.rgba.color1 = color1;
-        getHex();
-    });
-
     const [color2, setColor2] = useState({r:10,g:14,b:157,a:1});
-    useEffect( ()=>{
-        actualConfig.rgba.color2 = color2;
-        getHex();
-    } );
 
+    const [gradientStyle, setGradientStyle] = useState({
+        backgroundImage: `${gradientType}(${direction.length > 0 ? direction+',': ''} rgb(${color1.r},${color1.g},${color1.b}), rgb(${color2.r},${color2.g},${color2.b}))`
+    });
+    const [ hexConf, setHexConf] = useState({active: false,color1:RgbToHex(color1),color2:RgbToHex(color2)});
+    const [ rgbaConf, setRgbaConf] = useState({active: false,color1:color1,color2:color2});
+
+    const [clipboardCss, setClipboardCss] = useState(`background: ${gradientStyle.backgroundImage}`);
     
+    const [template, setTemplate] = useState({});
+
     const actualConfig = {
         gradientType:gradientType,
         directionType: directionType,
@@ -41,12 +45,14 @@ export function Sidebar(){
         color1: `rgb(${color1.r},${color1.g},${color1.b})`,
         color2: `rgb(${color2.r},${color2.g},${color2.b})`,
         hex: {
+            active: false,
             color1: "",
             color2: ""
         },
         rgba:  {
-            color1: {r:0,g:0,b:0,a:0},
-            color2: {r:0,g:0,b:0,a:0},
+            active: true,
+            color1: color1,
+            color2: color2,
         },
         style: {
             backgroundImage: `${gradientType}(${direction.length > 0 ? direction+',': ''} rgb(${color1.r},${color1.g},${color1.b}),rgb(${color2.r},${color2.g},${color2.b}))`
@@ -80,121 +86,9 @@ export function Sidebar(){
         }
     }
 
-    const [btnMap, setBtnMap] = useState(actualConfig.btnMap);
+    
+    
 
-    const [templates, setTemplates] = useState([]);
-    useEffect(()=>{
-        getAllTemplates().then( (data)=>{
-            allTemplatesData.current = data.result;
-            setTemplates(allTemplatesData.current);
-            setTemplate(allTemplatesData.current[0]);
-        })
-    },[]);
-
-    const [template, setTemplate] = useState({});
-    const [name, setName] = useState("");
-    const [createdBy, setCreatedBy] = useState("");
-    const [gradientStyle, setGradientStyle] = useState({
-        backgroundImage: `${gradientType}(${direction.length > 0 ? direction+',': ''} rgb(${color1.r},${color1.g},${color1.b}), rgb(${color2.r},${color2.g},${color2.b}))`
-    });
-  
-   
-    const getHex = ()=>{
-        let hexColor1 = actualConfig.color1.split("rgb(")[1].split(")")[0].split(",");
-        let hexColor2 = actualConfig.color2.split("rgb(")[1].split(")")[0].split(",");
-
-        
-        hexColor1 = hexColor1.map((val) =>{
-            val = parseInt(val).toString(16);     
-            return (val.length === 1) ? "0"+val : val;
-        });
-        hexColor2 = hexColor2.map((val) =>{
-            val = parseInt(val).toString(16);     
-            return (val.length === 1) ? "0"+val : val;
-        });
-        
-        actualConfig.hex.color1 = `#${hexColor1.join("")}`;
-        actualConfig.hex.color2 = `#${hexColor2.join("")}`;
-
-        //console.log(actualConfig);
-
-    }
-    const getRgba = ()=>{
-        actualConfig.rgba.color1 = color1;
-        actualConfig.rgba.color2 = color2;  
-
-        console.log(actualConfig);
-    }
-
-    const copyCssClipboard = ()=>{
-        const css = `background: ${gradientType}(${direction.length > 0 ? direction+',': ''} rgb(${color1.r},${color1.g},${color1.b}),rgb(${color2.r},${color2.g},${color2.b}));`
-        navigator.clipboard.writeText(css);
-        console.log(css);
-        alert("Copy to clipboard!");
-    }
-
-    const changeTemplateSelect = (e)=>{
-        e.preventDefault();
-        console.log(e.target.value);
-        setTemplate(e.target.value);
-        const filterArr = allTemplatesData.current.filter( (item)=>{
-            return item.id === e.target.value
-        })
-
-        if(filterArr.length > 0){
-            console.log(filterArr[0]);
-            const style = filterArr[0].style;
-
-            actualConfig.gradientType = style.gradientType;
-            actualConfig.directionType = style.directionType;
-            actualConfig.direction = style.direction;
-            actualConfig.color1 = style.color1;
-            actualConfig.color2 = style.color2;
-            actualConfig.hex.color1 = style.hex.color1;
-            actualConfig.hex.color2 = style.hex.color2;
-            actualConfig.rgba.color1 = style.rgba.color1;
-            actualConfig.rgba.color2 = style.rgba.color2;
-            actualConfig.style = style.style;
-
-            setGradientType(style.gradientType);
-            setDirectionType(style.directionType);
-            setDirection(style.direction)
-            setColor1(style.rgba.color1);
-            setColor2(style.rgba.color2);
-        }
-
-    }
-
-    const changeInput = (e, type)=>{
-        if(type === 'name'){
-            setName(e.target.value);
-        }
-        if(type === 'createdBy'){
-            setCreatedBy(e.target.value)
-        }
-    }
-
-    const onSubmitTemplate = (e) => {
-        e.preventDefault();
-        if(name !== "" && createdBy !== ""){
-            
-            const arr = {
-            name: name,
-            created_by: createdBy,
-            style: actualConfig
-            }  
-
-            addTemplate(arr).then((data) => {
-            allTemplatesData.current.push(data.result[0]);
-            setTemplates(allTemplatesData.current);
-            setTemplate(data.result[0]);
-            setName("");
-            setCreatedBy("");
-            });
-        }else{
-            alert("Fill form correctly.")
-        }
-    }
     const updateGradientType = (type) => {
         actualConfig.gradientType = type;
         if(gradientType !== type){
@@ -256,8 +150,54 @@ export function Sidebar(){
 
     const updateOutputFormat = (value)=>{
         console.log(value);
+        let background = "";
+        
+        if(value.hex.active){
+            background = `background: ${gradientType}(${direction.length > 0 ? direction+',': ''} ${value.hex.color1},  ${value.hex.color2}))`
+            actualConfig.hex = value.hex;
+            setHexConf(value.hex);
+            setClipboardCss(background);
+        }
+        if(value.rgba.active){
+            background = `background: ${gradientType}(${direction.length > 0 ? direction+',': ''} rgb(${value.rgba.color1.r},${value.rgba.color1.g},${value.rgba.color1.b}), rgb(${value.rgba.color2.r},${value.rgba.color2.g},${value.rgba.color2.b}))`;
+            actualConfig.rgba = value.rgba;
+            setRgbaConf(value.rgba);
+            setClipboardCss(background);
+        }
+
     }
 
+    const updateTemplates = (values)=>{
+        console.log(values);
+
+        setGradientStyle({
+            backgroundImage: `${values.style.gradientType}(${values.style.direction.length > 0 ? values.style.direction+',': ''} ${values.style.color1},${values.style.color2})`
+        }) 
+
+        actualConfig.gradientType = values.style.gradientType;
+        actualConfig.directionType = values.style.directionType;
+        actualConfig.direction = values.style.direction;
+        actualConfig.color1 = values.style.color1;
+        actualConfig.color2 = values.style.color2;
+        actualConfig.hex.color1 = values.style.hex.color1;
+        actualConfig.hex.color2 = values.style.hex.color2;
+        actualConfig.rgba.color1 = values.style.rgba.color1;
+        actualConfig.rgba.color2 = values.style.rgba.color2;
+        actualConfig.style = values.style.style;
+
+        setGradientType(values.style.gradientType);
+        setDirectionType(values.style.directionType);
+        setDirection(values.style.direction)
+        setColor1(values.style.rgba.color1);
+        setColor2(values.style.rgba.color2);
+
+    }
+
+    const updateCreateTemplate = (value)=>{
+        console.log(value);
+        // actualizar el TemplatesSelector con un hook
+        setTemplate(value.result[0]);
+    }
     return (
     <>
         <div className="sidebar">
@@ -272,36 +212,13 @@ export function Sidebar(){
 
             <Output onUpdateOutputFormat={updateOutputFormat} color1={color1} color2={color2} />
 
-            <div className="sidebar__content">
-                
-                <p className='subtitle'>  </p>
-                <button className='btn btn-lg' onClick={ ()=> copyCssClipboard() }> Get CSS </button>
-            </div>
+            <GetterOutputs clipboardCss={clipboardCss} />
 
-            <div className="sidebar__content">
-                <p className='subtitle'> Templates </p>
-                <select className='select-input' value={template.id}  onChange={ (e)=> changeTemplateSelect(e)}>
-                    {
-                    templates.map( 
-                        (data)=> {
-                        return(
-                            <option key={data.id} value={data.id}> {data.name} - {data.created_by}</option>
-                        )
-                        }
-                    )
-                    }
-                </select>
-            </div>
+            <TemplatesSelector onUpdateTemplates={updateTemplates} template={template}/>
+
+            <CreateTemplates onUpdateTemplate={updateCreateTemplate} config={actualConfig}/>
+
             
-            <div className="sidebar__content">
-                <p className='subtitle'> Create Template </p>
-                <form onSubmit={ (e)=> onSubmitTemplate(e)}>
-                    <input placeholder="Name" type='text' name='name' value={name} onChange={ (e)=> changeInput(e,'name')}/> <br/>
-                    <input placeholder="Created By" type='text' name='createdBy' value={createdBy} onChange={ (e)=> changeInput(e,'createdBy')}/> <br/>
-                
-                    <button type="submit" value="Submit" className='btn'> Save </button>
-                </form>
-            </div>
 
         </div>
 
