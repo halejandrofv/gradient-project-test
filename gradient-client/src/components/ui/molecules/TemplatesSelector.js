@@ -14,17 +14,30 @@ export function TemplatesSelector(props){
             actualTemplate.current = data.result[0];
             setTemplates(data.result);
             setTemplate(data.result[0]);
+            
         })
     },[]);
     
+
     useEffect(()=>{
+        // filter para saber si ya existe este template
+        // si si existe, no hara push y solo asignara inforamcion
+        // si no existe si hace push y lo selecciona
+        const filterArr = allTemplates.current.filter( (val) => {
+            return val.id === props.template.id
+        });
+        if(filterArr.length > 0){
+            actualTemplate.current = props.template;
+            setTemplate(actualTemplate.current);
+        }else{
+            allTemplates.current.push(props.template);
+            actualTemplate.current = props.template;
+            setTemplates(allTemplates.current);
+            setTemplate(actualTemplate.current);
+        }
         console.log(props.template);
-        allTemplates.current.push(props.template);
-        actualTemplate.current = props.template;
-        console.log(allTemplates);
-        console.log(actualTemplate);
-        setTemplates(allTemplates.current);
-        setTemplate(actualTemplate.current);
+        
+        
     },[props.template]);
     
     

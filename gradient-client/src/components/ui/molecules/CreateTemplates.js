@@ -7,7 +7,7 @@ export function CreateTemplates(props){
 
     const onSubmitTemplate = (e) => {
         e.preventDefault();
-        console.log(e);
+        
         if(name !== "" && createdBy !== ""){
             
             const arr = {
@@ -15,7 +15,7 @@ export function CreateTemplates(props){
                 created_by: createdBy,
                 style: props.config
             }  
-            
+            console.log(arr);   
             addTemplate(arr).then((data) => {
                 props.onUpdateTemplate(data);
                 setName("");
